@@ -1,4 +1,4 @@
-from langchain_openai import ChatOpenAI
+from langchain_huggingface import ChatHuggingFace, HuggingFaceEndpoint
 from dotenv import load_dotenv
 from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
@@ -15,7 +15,14 @@ prompt2 = PromptTemplate(
     input_variables=['text']
 )
 
-model = ChatOpenAI()
+
+llm = HuggingFaceEndpoint(
+    repo_id="deepseek-ai/DeepSeek-V4-Flash",
+    task="text-generation",
+    max_new_tokens = 1024
+)
+
+model = ChatHuggingFace(llm=llm)
 
 parser = StrOutputParser()
 
