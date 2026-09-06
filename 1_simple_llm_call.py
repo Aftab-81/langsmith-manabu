@@ -8,7 +8,6 @@ load_dotenv()
 # Simple one-line prompt
 prompt = PromptTemplate.from_template("{question}")
 
-
 llm = HuggingFaceEndpoint(
     repo_id="deepseek-ai/DeepSeek-V4-Flash",
     task="text-generation",
@@ -16,6 +15,7 @@ llm = HuggingFaceEndpoint(
 )
 
 model = ChatHuggingFace(llm=llm)
+
 parser = StrOutputParser()
 
 # Chain: prompt → model → parser
