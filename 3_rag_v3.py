@@ -1,5 +1,3 @@
-# pip install -U langchain langchain-openai langchain-community faiss-cpu pypdf python-dotenv langsmith
-
 import os
 from dotenv import load_dotenv
 
@@ -16,30 +14,32 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableParallel, RunnablePassthrough, RunnableLambda
 from langchain_core.output_parsers import StrOutputParser
 
+os.environ["LANGCHAIN_PROJECT"] = "RAG Chatbot"
+
 load_dotenv()
 
 PDF_PATH = "islr.pdf"  # <- change to your file
 
 # ----------------- helpers (not traced individually) -----------------
-@traceable(name="load_pdf")
+@traceable(name="load_pdf", tags = ["text generation", "summarization"], metadata = {"Loader": "PyPDF"})
 def load_pdf(path: str):
     loader = PyPDFLoader(path)
     return loader.load()  # list[Document]
 
-@traceable(name="split_documents")
+@traceable(name="split_documents", tags = ["text generation", "summarization"], metadata = {"splitter": "RecursiveCharacterTextSplitter", "chunk_size": 1000, "chunk_overlap": 150})
 def split_documents(docs, chunk_size=1000, chunk_overlap=150):
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=chunk_size, chunk_overlap=chunk_overlap
     )
     return splitter.split_documents(docs)
 
-@traceable(name="build_vectorstore")
+@traceable(name="build_vectorstore", tags = ["text generation", "summarization"], metadata = {"vector-store": "FAISS"})
 def build_vectorstore(splits):
     emb = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
     return FAISS.from_documents(splits, emb)
 
 # ----------------- parent setup function (traced) -----------------
-@traceable(name="setup_pipeline", tags=["setup"])
+@traceable(name="setup_pipeline", tags=["setup"], metadata = {"function_called": ["load_pdf", "split_documents", "build_vectorstore"]})
 def setup_pipeline(pdf_path: str, chunk_size=1000, chunk_overlap=150):
     # ✅ These three steps are “clubbed” under this parent function
     docs = load_pdf(pdf_path)
