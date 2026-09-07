@@ -1,9 +1,10 @@
-from langchain_openai import ChatOpenAI
+
+from langchain_huggingface import ChatHuggingFace, HuggingFaceEndpoint
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_core.tools import tool
 import requests
 from langchain_community.tools import DuckDuckGoSearchRun
-from langchain.agents import create_react_agent, AgentExecutor
-from langchain import hub
+from langchain_classic.agents import create_react_agent, AgentExecutor
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -21,14 +22,42 @@ def get_weather_data(city: str) -> str:
 
   return response.json()
 
-llm = ChatOpenAI()
 
-# Step 2: Pull the ReAct prompt from LangChain Hub
-prompt = hub.pull("hwchase17/react")  # pulls the standard ReAct agent prompt
+llm = HuggingFaceEndpoint(
+    repo_id="deepseek-ai/DeepSeek-V4-Flash",
+    task="text-generation",
+    max_new_tokens = 1024
+)
+
+model = ChatHuggingFace(llm=llm)
+
+# Step 2: Crate a prompt 
+template =  '''Answer the following questions as best you can. You have access to the following tools:
+
+        {tools}
+
+        Use the following format:
+
+        Question: the input question you must answer
+        Thought: you should always think about what to do
+        Action: the action to take, should be one of [{tool_names}]
+        Action Input: the input to the action
+        Observation: the result of the action
+        ... (this Thought/Action/Action Input/Observation can repeat N times)
+        Thought: I now know the final answer
+        Final Answer: the final answer to the original input question
+
+        Begin!
+
+        Question: {input}
+        Thought:{agent_scratchpad}'''
+
+from langchain_core.prompts import PromptTemplate
+prompt = PromptTemplate.from_template(template)
 
 # Step 3: Create the ReAct agent manually with the pulled prompt
 agent = create_react_agent(
-    llm=llm,
+    llm=model,
     tools=[search_tool, get_weather_data],
     prompt=prompt
 )
@@ -41,12 +70,12 @@ agent_executor = AgentExecutor(
     max_iterations=5
 )
 
-# What is the release date of Dhadak 2?
-# What is the current temp of gurgaon
-# Identify the birthplace city of Kalpana Chawla (search) and give its current temperature.
+# What is the release date of War 2?
+# What is the current temp of mumbai
+# Identify the birthplace city of Mary Kome (search) and give its current temperature.
 
 # Step 5: Invoke
-response = agent_executor.invoke({"input": "What is the current temp of gurgaon"})
+response = agent_executor.invoke({"input": "What is the current temp of mumbai"})
 print(response)
 
 print(response['output'])
