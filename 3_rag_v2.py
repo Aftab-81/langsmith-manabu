@@ -1,5 +1,3 @@
-# pip install -U langchain langchain-openai langchain-community faiss-cpu pypdf python-dotenv langsmith
-
 import os
 from dotenv import load_dotenv
 
@@ -20,6 +18,8 @@ from langchain_core.output_parsers import StrOutputParser
 # LANGCHAIN_API_KEY=...
 # LANGCHAIN_PROJECT=pdf_rag_demo
 
+os.environ["LANGCHAIN_PROJECT"] = "RAG Chatbot"
+
 load_dotenv()
 
 PDF_PATH = "islr.pdf"  # change to your file
@@ -30,7 +30,7 @@ def load_pdf(path: str):
     loader = PyPDFLoader(path)
     return loader.load()  # list[Document]
 
-@traceable(name="split_documents")
+@traceable(name="split_documents    ")
 def split_documents(docs, chunk_size=1000, chunk_overlap=150):
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=chunk_size, chunk_overlap=chunk_overlap
