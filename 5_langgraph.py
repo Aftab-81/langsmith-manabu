@@ -1,15 +1,16 @@
-# pip install -U langgraph langchain-openai pydantic python-dotenv langsmith
-
 import operator
 from typing import TypedDict, Annotated, List
 
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
 
+import os
 from langsmith import traceable
 from langchain_huggingface import ChatHuggingFace, HuggingFaceEndpoint
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.graph import StateGraph, START, END
+
+os.environ["LANGCHAIN_PROJECT"] = "LangGraph Workflow"
 
 # ---------- Setup ----------
 load_dotenv()
@@ -124,7 +125,7 @@ if __name__ == "__main__":
             "tags": ["essay", "langgraph", "evaluation"],
             "metadata": {
                 "essay_length": len(essay2),
-                "model": "gpt-4o-mini",
+                "model": "gemini-3.1-flash-lite",
                 "dimensions": ["language", "analysis", "clarity"],
             },
         },
