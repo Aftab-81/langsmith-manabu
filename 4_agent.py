@@ -1,11 +1,13 @@
-
 from langchain_huggingface import ChatHuggingFace, HuggingFaceEndpoint
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_core.tools import tool
 import requests
 from langchain_community.tools import DuckDuckGoSearchRun
 from langchain_classic.agents import create_react_agent, AgentExecutor
+import os
 from dotenv import load_dotenv
+
+os.environ["LANGCHAIN_PROJECT"] = "React Agent"
 
 load_dotenv()
 
@@ -59,7 +61,7 @@ prompt = PromptTemplate.from_template(template)
 agent = create_react_agent(
     llm=model,
     tools=[search_tool, get_weather_data],
-    prompt=prompt
+    prompt=prompt,
 )
 
 # Step 4: Wrap it with AgentExecutor
@@ -67,7 +69,8 @@ agent_executor = AgentExecutor(
     agent=agent,
     tools=[search_tool, get_weather_data],
     verbose=True,
-    max_iterations=5
+    max_iterations=5,
+    handle_parsing_errors = True
 )
 
 # What is the release date of War 2?
@@ -75,7 +78,7 @@ agent_executor = AgentExecutor(
 # Identify the birthplace city of Mary Kome (search) and give its current temperature.
 
 # Step 5: Invoke
-response = agent_executor.invoke({"input": "What is the current temp of mumbai"})
+response = agent_executor.invoke({"input": "Identify the birthplace city of Mary Kome (search) and give its current temperature."})
 print(response)
 
 print(response['output'])
